@@ -166,7 +166,7 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
   const toggle = (arr, setArr, id) =>
     setArr(arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
 
-  const likedLabels    = ALL_INGREDIENTS.filter((o) => liked.includes(o.id)).map((o) => o.label);
+  const likedLabels    = liked.includes("__all__") ? [] : ALL_INGREDIENTS.filter((o) => liked.includes(o.id)).map((o) => o.label);
   const excludedLabels = EXCLUDE_OPTIONS.filter((o)  => excluded.includes(o.id)).map((o) => o.label);
 
   return (
@@ -193,32 +193,34 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
 
         {step === 1 && (
           <div>
+            <p style={{ fontSize: 13, color: "#888", fontFamily: "sans-serif", margin: "0 0 14px", lineHeight: 1.8 }}>
+              부모님이 좋아하시는 재료를 선택해 주세요
+            </p>
+
             {/* 다 좋아요 버튼 */}
             <button
-              onClick={() => { setLiked([]); setStep(2); }}
-              style={{ width: "100%", background: "linear-gradient(135deg,#f5f0e8,#fff)", border: "2px solid #e4ddd4", borderRadius: 16, padding: "16px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", color: "#3a2e1e", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              onClick={() => { setLiked(liked.includes("__all__") ? [] : ["__all__"]); }}
+              style={{ width: "100%", background: liked.includes("__all__") ? "#2e7d4f" : "#fff", color: liked.includes("__all__") ? "#fff" : "#3a2e1e", border: `2px solid ${liked.includes("__all__") ? "#2e7d4f" : "#e4ddd4"}`, borderRadius: 16, padding: "14px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s" }}
             >
               <span style={{ fontSize: 20 }}>🙆</span>
-              <span><strong>다 좋아요!</strong> — AI가 알아서 골라줘요</span>
+              <span><strong>다 좋아요!</strong></span>
+              {liked.includes("__all__") && <span style={{ fontSize: 13, opacity: 0.8 }}>✓ 선택됨</span>}
             </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1, height: 1, background: "#e4ddd4" }} />
               <span style={{ fontSize: 12, color: "#bbb", fontFamily: "sans-serif" }}>또는 직접 선택</span>
               <div style={{ flex: 1, height: 1, background: "#e4ddd4" }} />
             </div>
-
-            <p style={{ fontSize: 13, color: "#888", fontFamily: "sans-serif", margin: "0 0 20px", lineHeight: 1.8 }}>
-              특별히 좋아하는 재료가 있으면 선택해 주세요
-            </p>
             {Object.entries(INGREDIENT_OPTIONS).map(([cat, items]) => (
               <div key={cat} style={{ marginBottom: 22 }}>
                 <h3 style={{ fontSize: 11, color: "#aaa", letterSpacing: 2, fontFamily: "sans-serif", textTransform: "uppercase", margin: "0 0 10px" }}>{cat}</h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {items.map((item) => {
+                    const isAll = liked.includes("__all__");
                     const on = liked.includes(item.id);
                     return (
-                      <button key={item.id} onClick={() => toggle(liked, setLiked, item.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 20, cursor: "pointer", background: on ? "#2e7d4f" : "#fff", color: on ? "#fff" : "#3a2e1e", border: `1.5px solid ${on ? "#2e7d4f" : "#e4ddd4"}`, fontSize: 13, fontFamily: "sans-serif", transition: "all 0.15s" }}>
+                      <button key={item.id} onClick={() => { if (!isAll) toggle(liked, setLiked, item.id); }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 20, cursor: isAll ? "default" : "pointer", background: on ? "#2e7d4f" : "#fff", color: on ? "#fff" : isAll ? "#ccc" : "#3a2e1e", border: `1.5px solid ${on ? "#2e7d4f" : "#e4ddd4"}`, fontSize: 13, fontFamily: "sans-serif", opacity: isAll ? 0.4 : 1, transition: "all 0.15s" }}>
                         {item.emoji} {item.label} {on && "✓"}
                       </button>
                     );
@@ -226,8 +228,22 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
                 </div>
               </div>
             ))}
-            <button onClick={() => setStep(2)} style={{ width: "100%", background: "#2e7d4f", color: "#fff", border: "none", borderRadius: 16, padding: "15px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", marginTop: 8 }}>
-              다음 → 제외할 음식 선택
+            {liked.length === 0 && (
+              <p style={{ textAlign: "center", fontSize: 13, color: "#e8a070", fontFamily: "sans-serif", margin: "16px 0 8px" }}>
+                ☝️ "다 좋아요" 또는 재료를 1개 이상 선택해야 다음으로 넘어갈 수 있어요
+              </p>
+            )}
+            <button
+              onClick={() => setStep(2)}
+              disabled={liked.length === 0}
+              style={{ width: "100%", background: liked.length > 0 ? "#2e7d4f" : "#e0e0e0", color: liked.length > 0 ? "#fff" : "#aaa", border: "none", borderRadius: 16, padding: "15px", fontSize: 15, cursor: liked.length > 0 ? "pointer" : "default", fontFamily: "sans-serif", marginTop: 8, transition: "all 0.2s" }}
+            >
+              {liked.length > 0
+                ? liked.includes("__all__")
+                  ? "다음 → 제외할 음식 선택"
+                  : `다음 → 제외할 음식 선택 (${liked.length}개 선택됨)`
+                : "재료를 선택해 주세요"
+              }
             </button>
           </div>
         )}
