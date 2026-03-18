@@ -108,8 +108,8 @@ async function generateDiet(dateStr, liked, excluded, favorites, previousMeals) 
 ${prevList}
 순수 JSON만 반환하세요. 설명이나 코드블록 없이.`;
 
-  // 최대 2회 재시도
-  for (let attempt = 0; attempt < 2; attempt++) {
+  // 최대 3회 재시도, 점진적 대기
+  for (let attempt = 0; attempt < 3; attempt++) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -119,7 +119,7 @@ ${prevList}
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 2500,
         system: buildSystemPrompt(liked, excluded, favorites),
         messages: [{ role: "user", content: userMsg }],
@@ -127,8 +127,8 @@ ${prevList}
     });
 
     if (res.status === 429) {
-      if (attempt === 0) {
-        await new Promise((r) => setTimeout(r, 3000)); // 3초 대기 후 재시도
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, (attempt + 1) * 8000)); // 8초, 16초 대기
         continue;
       }
       throw new Error("429");
