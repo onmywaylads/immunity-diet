@@ -65,96 +65,81 @@ const EXCLUDE_OPTIONS = [
 const ALL_INGREDIENTS = Object.values(INGREDIENT_OPTIONS).flat();
 const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
-// ── 핵심: 폐암 환자 특화 + 실제 황금레시피 검색 시스템 프롬프트
+// ── 실제 한국 가정식 레시피 기반 프롬프트 (웹검색 없이 내장 지식 활용)
 function buildSystemPrompt(liked, excluded, favorites) {
-  const likedStr    = liked.length     > 0 ? `선호 재료: ${liked.join(", ")}`                 : "선호 재료: 제한 없음";
-  const excludeStr  = excluded.length  > 0 ? `절대 제외: ${excluded.join(", ")}`               : "제외 항목: 없음";
-  const favStr      = favorites.length > 0 ? `즐겨찾기 메뉴 (자주 포함 권장): ${favorites.join(", ")}` : "";
+  const likedStr   = liked.length     > 0 ? `선호 재료 (반드시 포함): ${liked.join(", ")}` : "선호 재료: 제한 없음";
+  const excludeStr = excluded.length  > 0 ? `절대 제외 (사용 금지): ${excluded.join(", ")}` : "제외 항목: 없음";
+  const favStr     = favorites.length > 0 ? `즐겨찾기 메뉴 (가끔 포함): ${favorites.join(", ")}` : "";
 
-  return `당신은 폐암 환자 전문 영양사이자 한국 가정식 요리 전문가입니다.
-
-【최우선 원칙 - 반드시 준수】
-1. 반드시 실제로 존재하는 한국 가정식 메뉴만 선정할 것 (창작 메뉴 절대 금지)
-2. 폐암 환자에게 의학적으로 도움이 되는 메뉴만 선정할 것
-3. 각 메뉴는 반드시 웹 검색으로 "메뉴명 황금레시피"를 검색해 실제 레시피를 확인할 것
-
-【폐암 환자 식단 의학적 기준】
-✅ 적극 포함:
-- 항산화 성분 (브로콜리, 토마토, 블루베리, 당근) → 암세포 성장 억제
-- 오메가-3 (고등어, 연어, 삼치) → 항염증, 면역력 강화
-- 단백질 (두부, 달걀, 닭가슴살, 생선) → 근육 유지, 항암 치료 회복
-- 식이섬유 (현미, 버섯, 나물류) → 장 건강, 독소 배출
-- 비타민C/E (시금치, 감자, 견과류) → 면역 강화
-- 발효식품 (된장, 김치 소량) → 장내 미생물 균형
-
-❌ 반드시 피할 것:
-- 훈제/가공육 (소시지, 햄, 베이컨)
-- 탄 음식, 튀긴 음식
-- 과도한 소금/나트륨
-- 생고기, 날음식 (감염 위험)
-
-【조리 방법 원칙】
-- 찌기, 삶기, 조리기, 국/찌개 위주 (튀김 금지)
-- 소화가 잘 되는 부드러운 조리
-- 간은 최소화 (싱겁게)
+  return `당신은 20년 경력의 한국 가정식 요리 전문가이자 영양사입니다.
+당신은 한국 요리책, 만개의레시피, 해먹남녀, 백종원 레시피에 정통한 전문가입니다.
 
 ${likedStr}
 ${excludeStr}
 ${favStr}
 
-【임무】
-1. 폐암 환자에게 최적화된 실존 한국 가정식 메뉴 4가지 선정 (아침/점심/오후간식/저녁)
-2. 각 메뉴마다 웹 검색: "[메뉴명] 황금레시피" 검색 → 실제 재료와 조리법 확인
-3. 검색된 실제 레시피 기반으로 정확한 재료 양(큰술, g 단위)과 단계별 조리법 작성
-4. 왜 폐암 환자에게 이 메뉴가 좋은지 의학적 근거 명시
+【반드시 지킬 규칙】
+1. 실제로 존재하는 한국 가정식 메뉴만 사용 (예: 시금치된장국, 고등어조림, 두부계란찜, 콩나물국밥 등)
+2. 재료 양을 정확히 명시 (예: 두부 1/2모(150g), 된장 1큰술, 참기름 1작은술)
+3. 조리 단계는 실제 요리하듯 구체적으로 (예: "중불에서 3분간 볶는다", "뚜껑 덮고 약불로 10분")
+4. 소화가 잘 되는 부드러운 조리법 우선 (찜, 조림, 국, 찌개)
+5. 튀김, 훈제, 가공육 사용 금지
+6. 항산화/항염증 재료 포함 (브로콜리, 당근, 버섯, 생강, 강황, 오메가-3 생선류)
 
-반드시 아래 JSON 형식만 반환하세요. 다른 텍스트 없이:
+반드시 아래 JSON 형식만 반환하세요. 코드블록 없이 순수 JSON만:
 {
-  "theme": "오늘의 식단 테마 한 줄",
-  "tip": "폐암 환자를 위한 오늘의 영양 팁 (구체적으로)",
+  "theme": "오늘의 식단 테마 한 줄 (예: 고등어와 나물로 채운 든든한 하루)",
+  "tip": "오늘의 건강 팁 (구체적인 영양 정보 포함)",
   "meals": {
-    "아침":     { "name": "실존 메뉴명", "description": "한 줄 설명", "ingredients": ["재료 (정확한 양)"], "recipe": ["1. 조리 단계"], "nutrition": "칼로리 및 주요 영양소", "benefit": "폐암 환자에게 좋은 의학적 이유", "source": "레시피 참고 출처" },
-    "점심":     { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "", "source": "" },
-    "오후간식": { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "", "source": "" },
-    "저녁":     { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "", "source": "" }
+    "아침":     { "name": "실제 메뉴명", "description": "한 줄 설명", "ingredients": ["두부 1/2모(150g)", "달걀 2개"], "recipe": ["냄비에 물 500ml를 붓고 끓인다", "두부를 2cm 크기로 깍둑썬다"], "nutrition": "약 350kcal, 단백질 18g, 탄수화물 40g", "benefit": "면역력에 좋은 이유" },
+    "점심":     { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "" },
+    "오후간식": { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "" },
+    "저녁":     { "name": "", "description": "", "ingredients": [], "recipe": [], "nutrition": "", "benefit": "" }
   }
 }`;
 }
 
 async function generateDiet(dateStr, liked, excluded, favorites, previousMeals) {
   const prevList = previousMeals.length > 0
-    ? `\n\n이미 사용한 메뉴 (중복 금지, 단 즐겨찾기 메뉴는 가끔 반복 가능): ${previousMeals.join(", ")}`
+    ? `이미 사용한 메뉴 (중복 금지): ${previousMeals.slice(-20).join(", ")}`
     : "";
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 6000,
-      system: buildSystemPrompt(liked, excluded, favorites),
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-      messages: [{
-        role: "user",
-        content: `${dateStr} 날짜의 폐암 환자를 위한 맞춤 식단을 만들어주세요.
-각 메뉴마다 반드시 웹 검색으로 실제 황금레시피를 확인하고, 정확한 재료와 조리법을 작성해주세요.${prevList}
+  const userMsg = `${dateStr} 날짜 면역력 강화 맞춤 식단을 만들어주세요.
+${prevList}
+순수 JSON만 반환하세요. 설명이나 코드블록 없이.`;
 
-최종 응답은 반드시 JSON 형식만 반환하세요.`
-      }],
-    }),
-  });
+  // 최대 2회 재시도
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2500,
+        system: buildSystemPrompt(liked, excluded, favorites),
+        messages: [{ role: "user", content: userMsg }],
+      }),
+    });
 
-  const data = await res.json();
-  const textBlocks = data.content?.filter((b) => b.type === "text") || [];
-  const lastText = textBlocks[textBlocks.length - 1]?.text || "{}";
-  const jsonMatch = lastText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("JSON 파싱 실패");
-  return JSON.parse(jsonMatch[0]);
+    if (res.status === 429) {
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 3000)); // 3초 대기 후 재시도
+        continue;
+      }
+      throw new Error("429");
+    }
+
+    const data = await res.json();
+    const text = data.content?.find((b) => b.type === "text")?.text || "";
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("JSON 파싱 실패");
+    return JSON.parse(jsonMatch[0]);
+  }
 }
 
 /* ── 재료 선택 화면 ─────────────────────────────── */
@@ -332,21 +317,20 @@ function PreferenceScreen({ initialPrefs, onConfirm, onCancel }) {
 function LoadingScreen() {
   const [msgIdx, setMsgIdx] = useState(0);
   const messages = [
-    "🩺 폐암 회복에 좋은 메뉴를 고르고 있어요...",
-    "🔍 황금레시피를 검색하고 있어요...",
-    "📝 실제 재료와 조리법을 정리하고 있어요...",
-    "🌿 의학적 효능을 확인하고 있어요...",
+    "🌿 오늘의 메뉴를 고르고 있어요...",
+    "🍳 재료와 조리법을 정리하고 있어요...",
+    "🥦 영양 균형을 맞추고 있어요...",
     "✨ 거의 다 됐어요!",
   ];
   useEffect(() => {
-    const t = setInterval(() => setMsgIdx((i) => Math.min(i + 1, messages.length - 1)), 12000);
+    const t = setInterval(() => setMsgIdx((i) => Math.min(i + 1, messages.length - 1)), 5000);
     return () => clearInterval(t);
   }, []);
   return (
     <div style={{ background: "#fff", borderRadius: 20, padding: "70px 24px", textAlign: "center", border: "1px solid #e4ddd4" }}>
       <div style={{ fontSize: 44, marginBottom: 20, display: "inline-block", animation: "pulse 1.5s ease-in-out infinite" }}>🌿</div>
       <p style={{ color: "#5aaa80", fontSize: 16, margin: "0 0 10px" }}>{messages[msgIdx]}</p>
-      <p style={{ color: "#bbb", fontSize: 12, margin: "0 0 24px", fontFamily: "sans-serif" }}>실제 레시피를 검색 중이라 30초~1분 정도 걸려요</p>
+      <p style={{ color: "#bbb", fontSize: 12, margin: "0 0 24px", fontFamily: "sans-serif" }}>잠시만 기다려주세요 (약 10~20초)</p>
       <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
         {messages.map((_, i) => (
           <div key={i} style={{ width: i === msgIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === msgIdx ? "#5aaa80" : "#e0e0e0", transition: "all 0.3s" }} />
@@ -444,14 +428,25 @@ export default function App() {
       saveHistory({ ...history, [dateStr]: data });
       setSelectedDate(dateStr);
     } catch (err) {
-      setError("식단 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
       console.error(err);
+      if (err?.message?.includes("429") || String(err).includes("429")) {
+        setError("__429__");
+      } else {
+        setError("식단 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (showPrefScreen) return <PreferenceScreen initialPrefs={prefs} onConfirm={handleConfirm} onCancel={() => setShowPrefScreen(false)} />;
+  // 뒤로가기: 기존 식단 있으면 메인으로, 없으면 pref 화면 유지
+  const handleCancel = () => {
+    const hasTodayDiet = !!history[today()];
+    if (hasTodayDiet) setShowPrefScreen(false);
+    // 식단 없으면 그냥 pref 화면에 머뭄 (뒤로가기 무효)
+  };
+
+  if (showPrefScreen) return <PreferenceScreen initialPrefs={prefs} onConfirm={handleConfirm} onCancel={handleCancel} />;
 
   const currentDiet = history[selectedDate];
   const sortedDates = Object.keys(history).sort((a, b) => b.localeCompare(a));
@@ -520,7 +515,27 @@ export default function App() {
           </div>
         )}
 
-        {error && <div style={{ background: "#fff0ed", border: "1px solid #e8a090", borderRadius: 12, padding: 16, marginBottom: 16, fontSize: 14, color: "#c0392b", fontFamily: "sans-serif" }}>⚠️ {error}</div>}
+        {error && (
+          <div style={{ background: error === "__429__" ? "#fffbf0" : "#fff0ed", border: `1px solid ${error === "__429__" ? "#f5d78e" : "#e8a090"}`, borderRadius: 12, padding: 16, marginBottom: 16, fontFamily: "sans-serif" }}>
+            {error === "__429__" ? (
+              <div>
+                <p style={{ fontSize: 14, color: "#b07a10", margin: "0 0 8px", fontWeight: "bold" }}>⏳ API 요청이 너무 많아요</p>
+                <p style={{ fontSize: 13, color: "#8a6010", margin: "0 0 12px", lineHeight: 1.7 }}>
+                  웹 검색을 포함한 식단 생성은 시간이 필요해요.<br />
+                  1~2분 후 다시 시도해 주세요.
+                </p>
+                <button
+                  onClick={() => { setError(null); setShowPrefScreen(true); }}
+                  style={{ background: "#5aaa80", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}
+                >
+                  🔄 다시 시도하기
+                </button>
+              </div>
+            ) : (
+              <p style={{ fontSize: 14, color: "#c0392b", margin: 0 }}>⚠️ {error}</p>
+            )}
+          </div>
+        )}
 
         {loading && <LoadingScreen />}
 
