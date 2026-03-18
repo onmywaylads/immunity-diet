@@ -482,7 +482,7 @@ export default function App() {
         <button
           onClick={() => setShowPrefScreen(true)}
           disabled={loading}
-          style={{ width: "100%", background: loading ? "#ccc" : "linear-gradient(135deg,#c8673a,#e07840)", color: "#fff", border: "none", borderRadius: 16, padding: "16px", fontSize: 15, cursor: loading ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: "bold", marginBottom: 16, boxShadow: loading ? "none" : "0 4px 16px rgba(200,103,58,0.35)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          style={{ width: "100%", background: loading ? "#ccc" : "linear-gradient(135deg,#2e7d4f,#3a9e6a)", color: "#fff", border: "none", borderRadius: 16, padding: "16px", fontSize: 15, cursor: loading ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: "bold", marginBottom: 16, boxShadow: loading ? "none" : "0 4px 16px rgba(46,125,79,0.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
           {loading ? "⏳ 황금레시피 검색 중..." : "🔄 오늘의 식단 새로 생성하기"}
         </button>
@@ -523,7 +523,7 @@ export default function App() {
           <div>
             {/* 테마 & 팁 */}
             <div style={{ background: "linear-gradient(135deg,#f5f0e8,#fff)", borderRadius: 20, padding: "22px 24px", marginBottom: 14, border: "1px solid #e4ddd4", boxShadow: "0 4px 16px rgba(0,0,0,0.05)" }}>
-              <div style={{ fontSize: 17, fontStyle: "italic", marginBottom: 14, lineHeight: 1.5 }}>"{currentDiet.theme}"</div>
+              <div style={{ fontSize: 17, fontStyle: "italic", marginBottom: 14, lineHeight: 1.5 }}>{currentDiet.theme}</div>
               <div style={{ background: "#edf7f2", borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#1e5c36", lineHeight: 1.8, fontFamily: "sans-serif" }}>
                 💡 <strong>오늘의 건강 팁</strong><br />{currentDiet.tip || "항산화 식품을 충분히 섭취하고, 규칙적인 식사 시간을 지켜주세요."}
               </div>
@@ -611,8 +611,8 @@ export default function App() {
               );
             })}
 
-            <div style={{ textAlign: "center", padding: "24px 16px 0", fontSize: 12, color: "#ccc", fontFamily: "sans-serif", lineHeight: 1.8 }}>
-              ⚕️ 이 식단은 참고용입니다 · 담당 의사 및 영양사의 지도를 함께 따르세요
+            <div style={{ textAlign: "center", padding: "24px 16px 0", fontSize: 13, color: "#888", fontFamily: "sans-serif", lineHeight: 1.8, background: "#f0ede7", borderRadius: 12, margin: "8px 0 0", border: "1px solid #e4ddd4" }}>
+              ⚕️ 이 식단은 참고용입니다<br />담당 의사 및 영양사의 지도를 함께 따르세요
             </div>
           </div>
         )}
