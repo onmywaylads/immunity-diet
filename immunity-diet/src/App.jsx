@@ -13,7 +13,7 @@ const formatDate = (dateStr) => {
 const MEAL_ORDER = ["아침", "점심", "오후간식", "저녁"];
 const MEAL_META = {
   아침:     { icon: "🌅", bg: "#fff8f0", accent: "#d4772a", label: "아침 식사",  time: "07:00 – 08:30" },
-  점심:     { icon: "☀️", bg: "#f0faf3", accent: "#2e7d4f", label: "점심 식사",  time: "12:00 – 13:30" },
+  점심:     { icon: "☀️", bg: "#f0faf3", accent: "#5aaa80", label: "점심 식사",  time: "12:00 – 13:30" },
   오후간식: { icon: "🍵", bg: "#fdf5ff", accent: "#8b5db5", label: "오후 간식",  time: "15:00 – 16:00" },
   저녁:     { icon: "🌙", bg: "#f0f4ff", accent: "#3a5bbf", label: "저녁 식사",  time: "18:00 – 19:30" },
 };
@@ -158,7 +158,7 @@ async function generateDiet(dateStr, liked, excluded, favorites, previousMeals) 
 }
 
 /* ── 재료 선택 화면 ─────────────────────────────── */
-function PreferenceScreen({ initialPrefs, onConfirm }) {
+function PreferenceScreen({ initialPrefs, onConfirm, onCancel }) {
   // catAll: 카테고리별 "다 좋아요" 상태 (Set)
   const [catAll,   setCatAll]   = useState(() => new Set(initialPrefs?.catAll   || []));
   const [liked,    setLiked]    = useState(initialPrefs?.likedIds    || []);
@@ -194,7 +194,7 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7f5f0", fontFamily: "'Georgia', serif" }}>
-      <div style={{ background: "linear-gradient(150deg,#1a3d28,#2e7d4f 55%,#4a9e6f)", padding: "32px 24px 28px", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "linear-gradient(150deg,#2d6b4a,#5aaa80 55%,#7dc4a0)", padding: "32px 24px 28px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ maxWidth: 700, margin: "0 auto", position: "relative" }}>
           <div style={{ fontSize: 11, letterSpacing: 4, color: "rgba(255,255,255,0.4)", marginBottom: 10, textTransform: "uppercase", fontFamily: "sans-serif" }}>오늘의 식단 준비</div>
@@ -209,12 +209,12 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
 
         {/* 탭 — 제외할 음식은 재료 선택 완료 전까지 잠김 */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          <button onClick={() => setStep(1)} style={{ flex: 1, padding: "12px 0", borderRadius: 14, cursor: "pointer", background: step === 1 ? "#2e7d4f" : "#fff", border: `1.5px solid ${step === 1 ? "#2e7d4f" : "#e4ddd4"}`, color: step === 1 ? "#fff" : "#888", fontSize: 13, fontFamily: "sans-serif", fontWeight: step === 1 ? "bold" : "normal", transition: "all 0.2s" }}>
+          <button onClick={() => setStep(1)} style={{ flex: 1, padding: "12px 0", borderRadius: 14, cursor: "pointer", background: step === 1 ? "#5aaa80" : "#fff", border: `1.5px solid ${step === 1 ? "#5aaa80" : "#e4ddd4"}`, color: step === 1 ? "#fff" : "#888", fontSize: 13, fontFamily: "sans-serif", fontWeight: step === 1 ? "bold" : "normal", transition: "all 0.2s" }}>
             ✓ 좋아하는 재료 {hasSelection ? `(${likedLabels.length}개)` : ""}
           </button>
           <button
             onClick={() => { if (hasSelection) setStep(2); }}
-            style={{ flex: 1, padding: "12px 0", borderRadius: 14, cursor: hasSelection ? "pointer" : "not-allowed", background: step === 2 ? "#2e7d4f" : hasSelection ? "#fff" : "#f5f5f5", border: `1.5px solid ${step === 2 ? "#2e7d4f" : hasSelection ? "#e4ddd4" : "#eee"}`, color: step === 2 ? "#fff" : hasSelection ? "#888" : "#ccc", fontSize: 13, fontFamily: "sans-serif", fontWeight: step === 2 ? "bold" : "normal", transition: "all 0.2s" }}
+            style={{ flex: 1, padding: "12px 0", borderRadius: 14, cursor: hasSelection ? "pointer" : "not-allowed", background: step === 2 ? "#5aaa80" : hasSelection ? "#fff" : "#f5f5f5", border: `1.5px solid ${step === 2 ? "#5aaa80" : hasSelection ? "#e4ddd4" : "#eee"}`, color: step === 2 ? "#fff" : hasSelection ? "#888" : "#ccc", fontSize: 13, fontFamily: "sans-serif", fontWeight: step === 2 ? "bold" : "normal", transition: "all 0.2s" }}
           >
             ✕ 제외할 음식 {!hasSelection && "🔒"}
           </button>
@@ -230,27 +230,26 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
             {Object.entries(INGREDIENT_OPTIONS).map(([cat, items]) => {
               const isAllOn = catAll.has(cat);
               return (
-                <div key={cat} style={{ marginBottom: 24, background: "#fff", borderRadius: 16, padding: "16px", border: `1.5px solid ${isAllOn ? "#2e7d4f" : "#e8e0d6"}`, transition: "border-color 0.2s" }}>
-                  {/* 카테고리 헤더 + 다 좋아요 버튼 */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <h3 style={{ fontSize: 12, color: isAllOn ? "#2e7d4f" : "#aaa", letterSpacing: 2, fontFamily: "sans-serif", textTransform: "uppercase", margin: 0, fontWeight: "bold" }}>{cat}</h3>
+                <div key={cat} style={{ marginBottom: 16, background: "#fff", borderRadius: 16, padding: "16px", border: `1.5px solid ${isAllOn ? "#5aaa80" : "#e8e0d6"}`, transition: "border-color 0.2s" }}>
+                  <h3 style={{ fontSize: 11, color: isAllOn ? "#5aaa80" : "#aaa", letterSpacing: 2, fontFamily: "sans-serif", textTransform: "uppercase", margin: "0 0 12px", fontWeight: "bold" }}>{cat}</h3>
+                  {/* 개별 재료 버튼 — 다 좋아요 맨 앞에 */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {/* 다 좋아요 버튼 — 맨 앞 */}
                     <button
                       onClick={() => toggleCatAll(cat)}
-                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 20, cursor: "pointer", background: isAllOn ? "#2e7d4f" : "#f5f5f5", color: isAllOn ? "#fff" : "#666", border: `1.5px solid ${isAllOn ? "#2e7d4f" : "#e0e0e0"}`, fontSize: 12, fontFamily: "sans-serif", transition: "all 0.15s" }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 20, cursor: "pointer", background: isAllOn ? "#5aaa80" : "#f0faf5", color: isAllOn ? "#fff" : "#3d7a5a", border: `1.5px solid ${isAllOn ? "#5aaa80" : "#b8dfc8"}`, fontSize: 13, fontFamily: "sans-serif", fontWeight: "bold", transition: "all 0.15s" }}
                     >
                       🙆 다 좋아요 {isAllOn && "✓"}
                     </button>
-                  </div>
 
-                  {/* 개별 재료 버튼 */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {/* 개별 재료 */}
                     {items.map((item) => {
                       const on = liked.includes(item.id);
                       return (
                         <button
                           key={item.id}
                           onClick={() => { if (!isAllOn) toggleItem(item.id); }}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 20, cursor: isAllOn ? "default" : "pointer", background: isAllOn ? "#edf7f2" : on ? "#2e7d4f" : "#f8f8f8", color: isAllOn ? "#2e7d4f" : on ? "#fff" : "#3a2e1e", border: `1.5px solid ${isAllOn ? "#b8e6cc" : on ? "#2e7d4f" : "#e8e8e8"}`, fontSize: 13, fontFamily: "sans-serif", opacity: isAllOn ? 0.7 : 1, transition: "all 0.15s" }}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 20, cursor: isAllOn ? "default" : "pointer", background: isAllOn ? "#f0faf5" : on ? "#5aaa80" : "#f8f8f8", color: isAllOn ? "#aaa" : on ? "#fff" : "#3a2e1e", border: `1.5px solid ${isAllOn ? "#ddf0e8" : on ? "#5aaa80" : "#e8e8e8"}`, fontSize: 13, fontFamily: "sans-serif", opacity: isAllOn ? 0.6 : 1, transition: "all 0.15s" }}
                         >
                           {item.emoji} {item.label} {on && !isAllOn && "✓"}
                         </button>
@@ -266,13 +265,19 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
                 ☝️ 재료를 1개 이상 선택해야 다음으로 넘어갈 수 있어요
               </p>
             )}
-            <button
-              onClick={() => { if (hasSelection) setStep(2); }}
-              disabled={!hasSelection}
-              style={{ width: "100%", background: hasSelection ? "#2e7d4f" : "#e0e0e0", color: hasSelection ? "#fff" : "#aaa", border: "none", borderRadius: 16, padding: "15px", fontSize: 15, cursor: hasSelection ? "pointer" : "default", fontFamily: "sans-serif", marginTop: 8, transition: "all 0.2s" }}
-            >
-              {hasSelection ? `다음 → 제외할 음식 선택 (${likedLabels.length}개 선택됨)` : "재료를 선택해 주세요"}
-            </button>
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button
+                onClick={() => onCancel && onCancel()}
+                style={{ flex: 1, background: "#fff", color: "#888", border: "1.5px solid #e4ddd4", borderRadius: 16, padding: "14px", fontSize: 14, cursor: "pointer", fontFamily: "sans-serif" }}
+              >← 뒤로</button>
+              <button
+                onClick={() => { if (hasSelection) setStep(2); }}
+                disabled={!hasSelection}
+                style={{ flex: 2, background: hasSelection ? "#5aaa80" : "#e0e0e0", color: hasSelection ? "#fff" : "#aaa", border: "none", borderRadius: 16, padding: "15px", fontSize: 15, cursor: hasSelection ? "pointer" : "default", fontFamily: "sans-serif", transition: "all 0.2s" }}
+              >
+                {hasSelection ? `다음 → 제외할 음식 선택 (${likedLabels.length}개)` : "재료를 선택해 주세요"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -297,7 +302,7 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
             <div style={{ background: "#fff", borderRadius: 16, padding: "16px 20px", border: "1px solid #e4ddd4", marginBottom: 16 }}>
               <p style={{ fontSize: 11, color: "#bbb", fontFamily: "sans-serif", margin: "0 0 10px", letterSpacing: 1, textTransform: "uppercase" }}>오늘 식단 요약</p>
               <div style={{ fontSize: 13, fontFamily: "sans-serif", lineHeight: 2.2, color: "#3a2e1e" }}>
-                <span style={{ color: "#2e7d4f", fontWeight: "bold" }}>✓ 선호</span>{"  "}
+                <span style={{ color: "#5aaa80", fontWeight: "bold" }}>✓ 선호</span>{"  "}
                 {likedLabels.length > 0 ? likedLabels.join(", ") : "제한 없음"}<br />
                 <span style={{ color: "#c0392b", fontWeight: "bold" }}>✕ 제외</span>{"  "}
                 {excludedLabels.length > 0 ? excludedLabels.join(", ") : "없음"}
@@ -312,7 +317,7 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
 
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setStep(1)} style={{ flex: 1, background: "#fff", color: "#888", border: "1.5px solid #e4ddd4", borderRadius: 16, padding: "14px", fontSize: 14, cursor: "pointer", fontFamily: "sans-serif" }}>← 뒤로</button>
-              <button onClick={() => onConfirm(liked, excluded, likedLabels, excludedLabels, Array.from(catAll))} style={{ flex: 2, background: "#c8673a", color: "#fff", border: "none", borderRadius: 16, padding: "14px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", fontWeight: "bold" }}>
+              <button onClick={() => onConfirm(liked, excluded, likedLabels, excludedLabels, Array.from(catAll))} style={{ flex: 2, background: "#5aaa80", color: "#fff", border: "none", borderRadius: 16, padding: "14px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", fontWeight: "bold" }}>
                 🔍 황금레시피로 식단 생성
               </button>
             </div>
@@ -340,11 +345,11 @@ function LoadingScreen() {
   return (
     <div style={{ background: "#fff", borderRadius: 20, padding: "70px 24px", textAlign: "center", border: "1px solid #e4ddd4" }}>
       <div style={{ fontSize: 44, marginBottom: 20, display: "inline-block", animation: "pulse 1.5s ease-in-out infinite" }}>🌿</div>
-      <p style={{ color: "#2e7d4f", fontSize: 16, margin: "0 0 10px" }}>{messages[msgIdx]}</p>
+      <p style={{ color: "#5aaa80", fontSize: 16, margin: "0 0 10px" }}>{messages[msgIdx]}</p>
       <p style={{ color: "#bbb", fontSize: 12, margin: "0 0 24px", fontFamily: "sans-serif" }}>실제 레시피를 검색 중이라 30초~1분 정도 걸려요</p>
       <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
         {messages.map((_, i) => (
-          <div key={i} style={{ width: i === msgIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === msgIdx ? "#2e7d4f" : "#e0e0e0", transition: "all 0.3s" }} />
+          <div key={i} style={{ width: i === msgIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === msgIdx ? "#5aaa80" : "#e0e0e0", transition: "all 0.3s" }} />
         ))}
       </div>
       <style>{`@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}`}</style>
@@ -366,7 +371,7 @@ function FavoritesTab({ favorites, onClose }) {
   return (
     <div style={{ background: "#fff", borderRadius: 16, padding: "16px 20px", border: "1px solid #e4ddd4", marginBottom: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <p style={{ fontSize: 13, color: "#2e7d4f", fontFamily: "sans-serif", margin: 0, fontWeight: "bold" }}>
+        <p style={{ fontSize: 13, color: "#5aaa80", fontFamily: "sans-serif", margin: 0, fontWeight: "bold" }}>
           ❤️ 즐겨찾기 메뉴 ({favorites.length}개)
         </p>
         <button onClick={onClose} style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 18 }}>×</button>
@@ -446,7 +451,7 @@ export default function App() {
     }
   };
 
-  if (showPrefScreen) return <PreferenceScreen initialPrefs={prefs} onConfirm={handleConfirm} />;
+  if (showPrefScreen) return <PreferenceScreen initialPrefs={prefs} onConfirm={handleConfirm} onCancel={() => setShowPrefScreen(false)} />;
 
   const currentDiet = history[selectedDate];
   const sortedDates = Object.keys(history).sort((a, b) => b.localeCompare(a));
@@ -454,7 +459,7 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#f7f5f0", fontFamily: "'Georgia', serif", color: "#1e1a12" }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(150deg,#1a3d28,#2e7d4f 55%,#4a9e6f)", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "linear-gradient(150deg,#2d6b4a,#5aaa80 55%,#7dc4a0)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
         <div style={{ maxWidth: 700, margin: "0 auto", padding: "36px 24px 28px", position: "relative" }}>
           <div style={{ fontSize: 11, letterSpacing: 4, color: "rgba(255,255,255,0.4)", marginBottom: 12, textTransform: "uppercase", fontFamily: "sans-serif" }}>회복을 응원하는 맞춤 식단</div>
@@ -482,14 +487,14 @@ export default function App() {
         <button
           onClick={() => setShowPrefScreen(true)}
           disabled={loading}
-          style={{ width: "100%", background: loading ? "#ccc" : "linear-gradient(135deg,#2e7d4f,#3a9e6a)", color: "#fff", border: "none", borderRadius: 16, padding: "16px", fontSize: 15, cursor: loading ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: "bold", marginBottom: 16, boxShadow: loading ? "none" : "0 4px 16px rgba(46,125,79,0.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          style={{ width: "100%", background: loading ? "#ccc" : "linear-gradient(135deg,#5aaa80,#5aaa80)", color: "#fff", border: "none", borderRadius: 16, padding: "16px", fontSize: 15, cursor: loading ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: "bold", marginBottom: 16, boxShadow: loading ? "none" : "0 4px 16px rgba(90,170,128,0.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
           {loading ? "⏳ 황금레시피 검색 중..." : "🔄 오늘의 식단 새로 생성하기"}
         </button>
 
         {/* 기록 / 즐겨찾기 */}
         <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-          <button onClick={() => { setShowHistory(!showHistory); setShowFavorites(false); }} style={{ background: showHistory ? "#2e7d4f" : "#fff", color: showHistory ? "#fff" : "#2e7d4f", border: "1.5px solid #2e7d4f", borderRadius: 20, padding: "8px 14px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>
+          <button onClick={() => { setShowHistory(!showHistory); setShowFavorites(false); }} style={{ background: showHistory ? "#5aaa80" : "#fff", color: showHistory ? "#fff" : "#5aaa80", border: "1.5px solid #5aaa80", borderRadius: 20, padding: "8px 14px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>
             📋 기록 {sortedDates.length > 0 ? `(${sortedDates.length})` : ""}
           </button>
           <button onClick={() => { setShowFavorites(!showFavorites); setShowHistory(false); }} style={{ background: showFavorites ? "#c0392b" : "#fff", color: showFavorites ? "#fff" : "#c0392b", border: "1.5px solid #c0392b", borderRadius: 20, padding: "8px 14px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>
@@ -507,7 +512,7 @@ export default function App() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {sortedDates.map((d) => (
                 <button key={d} onClick={() => { setSelectedDate(d); setShowHistory(false); setExpandedMeal(null); }}
-                  style={{ background: d === selectedDate ? "#2e7d4f" : "#f0ede7", color: d === selectedDate ? "#fff" : "#3a2e1e", border: "none", borderRadius: 12, padding: "5px 12px", fontSize: 12, cursor: "pointer", fontFamily: "sans-serif" }}>
+                  style={{ background: d === selectedDate ? "#5aaa80" : "#f0ede7", color: d === selectedDate ? "#fff" : "#3a2e1e", border: "none", borderRadius: 12, padding: "5px 12px", fontSize: 12, cursor: "pointer", fontFamily: "sans-serif" }}>
                   {d === today() ? `오늘 (${d})` : d}
                 </button>
               ))}
@@ -524,7 +529,7 @@ export default function App() {
             {/* 테마 & 팁 */}
             <div style={{ background: "linear-gradient(135deg,#f5f0e8,#fff)", borderRadius: 20, padding: "22px 24px", marginBottom: 14, border: "1px solid #e4ddd4", boxShadow: "0 4px 16px rgba(0,0,0,0.05)" }}>
               <div style={{ fontSize: 17, fontStyle: "italic", marginBottom: 14, lineHeight: 1.5 }}>{currentDiet.theme}</div>
-              <div style={{ background: "#edf7f2", borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#1e5c36", lineHeight: 1.8, fontFamily: "sans-serif" }}>
+              <div style={{ background: "#f0faf5", borderRadius: 12, padding: "12px 16px", fontSize: 13, color: "#3d7a5a", lineHeight: 1.8, fontFamily: "sans-serif" }}>
                 💡 <strong>오늘의 건강 팁</strong><br />{currentDiet.tip || "항산화 식품을 충분히 섭취하고, 규칙적인 식사 시간을 지켜주세요."}
               </div>
             </div>
@@ -578,7 +583,7 @@ export default function App() {
                           </ul>
                         </div>
                         <div>
-                          <h4 style={{ margin: "0 0 10px", fontSize: 11, color: "#2e7d4f", letterSpacing: 1, fontFamily: "sans-serif", textTransform: "uppercase" }}>영양 정보</h4>
+                          <h4 style={{ margin: "0 0 10px", fontSize: 11, color: "#5aaa80", letterSpacing: 1, fontFamily: "sans-serif", textTransform: "uppercase" }}>영양 정보</h4>
                           <p style={{ fontSize: 12, color: "#666", fontFamily: "sans-serif", lineHeight: 1.7, margin: 0 }}>{meal.nutrition}</p>
                         </div>
                       </div>
@@ -611,7 +616,7 @@ export default function App() {
               );
             })}
 
-            <div style={{ textAlign: "center", padding: "24px 16px 0", fontSize: 13, color: "#888", fontFamily: "sans-serif", lineHeight: 1.8, background: "#f0ede7", borderRadius: 12, margin: "8px 0 0", border: "1px solid #e4ddd4" }}>
+            <div style={{ textAlign: "center", padding: "14px 16px", fontSize: 13, color: "#888", fontFamily: "sans-serif", lineHeight: 1.8, background: "#f0ede7", borderRadius: 12, marginTop: 8, border: "1px solid #e4ddd4" }}>
               ⚕️ 이 식단은 참고용입니다<br />담당 의사 및 영양사의 지도를 함께 따르세요
             </div>
           </div>
