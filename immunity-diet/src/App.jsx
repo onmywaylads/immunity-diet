@@ -193,9 +193,23 @@ function PreferenceScreen({ initialPrefs, onConfirm }) {
 
         {step === 1 && (
           <div>
+            {/* 다 좋아요 버튼 */}
+            <button
+              onClick={() => { setLiked([]); setStep(2); }}
+              style={{ width: "100%", background: "linear-gradient(135deg,#f5f0e8,#fff)", border: "2px solid #e4ddd4", borderRadius: 16, padding: "16px", fontSize: 15, cursor: "pointer", fontFamily: "sans-serif", color: "#3a2e1e", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              <span style={{ fontSize: 20 }}>🙆</span>
+              <span><strong>다 좋아요!</strong> — AI가 알아서 골라줘요</span>
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <div style={{ flex: 1, height: 1, background: "#e4ddd4" }} />
+              <span style={{ fontSize: 12, color: "#bbb", fontFamily: "sans-serif" }}>또는 직접 선택</span>
+              <div style={{ flex: 1, height: 1, background: "#e4ddd4" }} />
+            </div>
+
             <p style={{ fontSize: 13, color: "#888", fontFamily: "sans-serif", margin: "0 0 20px", lineHeight: 1.8 }}>
-              부모님이 좋아하시는 재료를 선택해 주세요.<br />
-              <span style={{ fontSize: 12, color: "#bbb" }}>폐암 회복에 도움되는 메뉴 중 선호 재료 중심으로 구성해요</span>
+              특별히 좋아하는 재료가 있으면 선택해 주세요
             </p>
             {Object.entries(INGREDIENT_OPTIONS).map(([cat, items]) => (
               <div key={cat} style={{ marginBottom: 22 }}>
